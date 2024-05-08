@@ -31,7 +31,7 @@ public class CohesionBehavior : Steering
     public override SteeringData GetSteering(SteeringBehaviorController steeringController)
     {
         SteeringData steering = new SteeringData();
-        Vector2 centerOfMass = Vector2.zero;
+        Vector2 center = Vector2.zero;
         int count = 0;
 
         foreach (Transform target in targets)
@@ -41,13 +41,13 @@ public class CohesionBehavior : Steering
 
             if (distance < threshold)
             {
-                centerOfMass += (Vector2)target.position;
+                center += (Vector2)target.position;
                 count++;
             }
             if (count > 0)
             {
-                centerOfMass /= count;
-                Vector2 direction = centerOfMass - (Vector2)transform.position;
+                center /= count;
+                Vector2 direction = center - (Vector2)transform.position;
                 steering.linear = direction.normalized * maxAcceleration;
             }
         }
