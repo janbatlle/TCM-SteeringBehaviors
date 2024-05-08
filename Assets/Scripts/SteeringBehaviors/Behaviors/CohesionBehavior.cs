@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class CohesionBehavior : Steering
@@ -7,7 +8,7 @@ public class CohesionBehavior : Steering
     [SerializeField]
     private float threshold = 2f;
     [SerializeField]
-    private float decayCoefficient = -25f;
+    public float maxAcceleration;
 
     private Transform[] targets;
 
@@ -15,6 +16,7 @@ public class CohesionBehavior : Steering
     {
         SteeringBehaviorController[] agents = FindObjectsOfType<SteeringBehaviorController>();
         targets = new Transform[agents.Length - 1];
+      
         int count = 0;
 
         foreach (SteeringBehaviorController agent in agents)
@@ -29,20 +31,26 @@ public class CohesionBehavior : Steering
     public override SteeringData GetSteering(SteeringBehaviorController steeringController)
     {
         SteeringData steering = new SteeringData();
+        Vector2 centerOfMass = Vector2.zero;
+        int count = 0;
 
         foreach (Transform target in targets)
         {
-            Vector2 direction = target.transform.position - transform.position;
-            float distance = direction.magnitude;
+            Vector2 toTarget = target.position - transform.position;
+            float distance = toTarget.magnitude;
 
             if (distance < threshold)
             {
-                float strength = Mathf.Min(decayCoefficient / (distance * distance), steeringController.maxAcceleration);
-                direction.Normalize();
-                steering.linear += strength * direction;
+                centerOfMass += (Vector2)target.position;
+                count++;
+            }
+            if (count > 0)
+            {
+                centerOfMass /= count;
+                Vector2 direction = centerOfMass - (Vector2)transform.position;
+                steering.linear = direction.normalized * maxAcceleration;
             }
         }
-
         return steering;
     }
 }
